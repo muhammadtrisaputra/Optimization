@@ -1,0 +1,38 @@
+using JuMP
+using Ipopt
+using LinearAlgebra
+
+# Fungsi untuk menghitung luas segitiga menggunakan rumus Heron
+function heron_formula(a, b, c)
+    s = (a + b + c) / 2  # setengah keliling
+    return sqrt(s * (s - a) * (s - b) * (s - c))  # rumus Heron
+end
+
+# Membuat model optimisasi dengan JuMP dan Ipopt sebagai solver
+model = Model(Ipopt.Optimizer)
+
+# Menambahkan variabel (panjang sisi segitiga)
+@variable(model, 1 <= a <= 10)  # sisi a dengan batasan 1 <= a <= 10
+@variable(model, 1 <= b <= 10)  # sisi b dengan batasan 1 <= b <= 10
+@variable(model, 1 <= c <= 10)  # sisi c dengan batasan 1 <= c <= 10
+
+# Menambahkan pembatas agar memenuhi syarat segitiga
+@constraint(model, a + b > c)
+@constraint(model, a + c > b)
+@constraint(model, b + c > a)
+
+# Tujuan: memaksimalkan luas segitiga (menggunakan rumus Heron)
+@NLobjective(model, Max, heron_formula(a, b, c))
+
+# Menjalankan optimisasi
+optimize!(model)
+
+# Mendapatkan hasil solusi optimal
+optimal_a = value(a)
+optimal_b = value(b)
+optimal_c = value(c)
+optimal_area = heron_formula(optimal_a, optimal_b, optimal_c)
+
+# Menampilkan hasil
+println("Panjang sisi optimal: a = $optimal_a, b = $optimal_b, c = $optimal_c")
+println("Luas segitiga maksimum: $optimal_area")
